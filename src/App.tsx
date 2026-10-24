@@ -17,8 +17,8 @@ export default function App() {
     <label>Correo<input type="email" value={email} onChange={e => setEmail(e.target.value)} /></label>
     <label>Contraseña<input type="password" value={pw} onChange={e => setPw(e.target.value)} /></label>
     <button onClick={async () => { const { error } = await supabase!.auth.signInWithPassword({ email, password: pw }); setMsg(error ? 'Correo o contraseña incorrectos.' : '') }}>Iniciar sesión</button>
-    <button onClick={async () => { const { error } = await supabase!.auth.signUp({ email, password: pw }); setMsg(error ? error.message : 'Revisa tu correo para confirmar la cuenta.') }}>Crear cuenta</button>
-    <button onClick={async () => { const { error } = await supabase!.auth.resetPasswordForEmail(email); setMsg(error ? error.message : 'Te enviamos un enlace de recuperación.') }}>Olvidé mi contraseña</button>
+    <button onClick={async () => { const { error } = await supabase!.auth.signUp({ email, password: pw, options: { emailRedirectTo: window.location.origin } }); setMsg(error ? error.message : 'Revisa tu correo para confirmar la cuenta.') }}>Crear cuenta</button>
+    <button onClick={async () => { const { error } = await supabase!.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin }); setMsg(error ? error.message : 'Te enviamos un enlace de recuperación.') }}>Olvidé mi contraseña</button>
     <p role="status">{msg}</p></main>
   return <main><h1>Mis fincas</h1><button onClick={() => supabase!.auth.signOut()}>Cerrar sesión</button>
     {farms.length === 0 ? <p className="muted">Aún no tienes fincas. Crea la primera abajo.</p> : <ul>{farms.map(f => <li key={f.id}><b>{f.name}</b> <span className="muted">{f.municipality ?? ''} {f.area_ha ? `· ${f.area_ha} ha` : ''}</span>
