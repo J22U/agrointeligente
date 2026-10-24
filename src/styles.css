@@ -63,3 +63,13 @@ input[readonly]{background:#f3f6ef;color:var(--m)}
 /* v8: costos */
 .fold{border:1px solid var(--l);border-radius:12px;background:#fff;margin:12px 0;padding:0 16px}.fold summary{min-height:52px;display:flex;align-items:center;font-weight:700;color:var(--hoja);cursor:pointer}.fold[open]{padding-bottom:16px}
 @media(max-width:799px){.navbtn{font-size:.72rem}}
+/* v9: formulario del diario */
+.panel{border:1px solid var(--l);border-radius:14px;background:#fff;padding:18px;margin-bottom:8px}
+.two{display:grid;gap:0 14px;grid-template-columns:1fr}@media(min-width:800px){.two{grid-template-columns:1fr 1fr}}
+.lab{font-weight:700;margin:16px 0 6px}.chips{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:6px}@media(min-width:800px){.chips{grid-template-columns:repeat(5,1fr)}}
+.chip{min-height:48px;padding:0 8px;font-size:.92rem;border:1.5px solid var(--l);color:var(--t);background:#fff;font-weight:600}.chip.on{background:var(--hoja);border-color:var(--hoja);color:#fff}
+.panel .primary{width:100%}
+/* v10: edición */
+.btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.btns button{min-height:44px;padding:0 14px}
+.form button[type=button],.panel button[type=button].cancel{margin-left:0}
+@media(max-width:799px){.row{flex-wrap:wrap}.row>.btns{width:100%;justify-content:flex-start}}
