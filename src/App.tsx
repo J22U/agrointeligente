@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase, configured } from './lib/supabase'
+import { Logo } from './components/Art'
 import Auth from './screens/Auth'
 import Dashboard from './screens/Dashboard'
 import Farms from './screens/Farms'
@@ -17,7 +18,7 @@ export default function App() {
   if (!ready) return <main className="plain"><p className="muted">Cargando…</p></main>
   if (!session) return <Auth />
   return <div className="shell">
-    <nav className="nav" aria-label="Principal"><div className="logo">AgroInteligente</div>
+    <nav className="nav" aria-label="Principal"><div className="logo"><Logo size={30} />AgroInteligente</div>
       {NAV.map(n => <button key={n.id} className={view === n.id ? 'navbtn on' : 'navbtn'} aria-current={view === n.id ? 'page' : undefined} onClick={() => setView(n.id)}>{n.label}</button>)}
       {SOON.map(s => <button key={s} className="navbtn soon" disabled title="Próximamente">{s}<small>Pronto</small></button>)}
       <div className="spacer" /><div className="who">{session.user.email}</div><button className="navbtn out" onClick={() => supabase!.auth.signOut()}>Cerrar sesión</button></nav>
