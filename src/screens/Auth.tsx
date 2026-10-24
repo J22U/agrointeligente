@@ -5,7 +5,7 @@ const T = tramoActual()
 const storageOk = (() => { try { localStorage.setItem('__t', '1'); localStorage.removeItem('__t'); return true } catch { return false } })()
 type Mode = 'in' | 'up' | 'reset'
 const traducir = (m: string) => /Invalid login/i.test(m) ? 'Correo o contraseña incorrectos.' : /already registered/i.test(m) ? 'Ya existe una cuenta con ese correo.' : /not confirmed/i.test(m) ? 'Confirma tu correo antes de entrar.' : /rate limit/i.test(m) ? 'Demasiados intentos. Espera unos minutos.' : 'No se pudo completar. Inténtalo de nuevo.'
-export default function Auth() {
+export default function Auth({ diag = '' }: { diag?: string }) {
   const [mode, setMode] = useState<Mode>('in'); const [email, setEmail] = useState(''); const [pw, setPw] = useState('')
   const [msg, setMsg] = useState<{ ok: boolean; t: string } | null>(null); const [busy, setBusy] = useState(false)
   const emailOk = /^\S+@\S+\.\S+$/.test(email); const valid = emailOk && (mode === 'reset' || pw.length >= 6)
@@ -29,6 +29,7 @@ export default function Auth() {
         {mode === 'up' && <p className="hint">Mínimo 6 caracteres.</p>}</>}
       <button className="primary" disabled={!valid || busy}>{busy ? 'Un momento…' : mode === 'in' ? 'Entrar' : mode === 'up' ? 'Crear cuenta' : 'Enviar enlace'}</button>
       {msg && <p role="status" className={msg.ok ? 'hint ok' : 'hint err'}>{msg.t}</p>}
+      {diag && new URLSearchParams(location.search).has('diag') && <p className="hint muted">Diagnóstico: {diag}</p>}
       <div className="links">
         {mode !== 'in' && <button type="button" className="link" onClick={() => { setMode('in'); setMsg(null) }}>Ya tengo cuenta</button>}
         {mode !== 'up' && <button type="button" className="link" onClick={() => { setMode('up'); setMsg(null) }}>Crear cuenta</button>}
