@@ -46,3 +46,10 @@ button.danger{border-color:#e2bcb9;color:var(--r)}button.link{border:0;backgroun
 .stats div{animation:rise .55s ease-out both}.stats div:nth-child(2){animation-delay:.08s}.stats div:nth-child(3){animation-delay:.16s}.stats div:nth-child(4){animation-delay:.24s}
 @keyframes rise{from{opacity:0;transform:translateY(10px)}}
 @media(prefers-reduced-motion:reduce){.stats div{animation:none}}
+/* v4: lotes y diario */
+select{width:100%;font:inherit;padding:13px;border:1.5px solid #c9d7bd;border-radius:10px;background:#fff}select:focus{border-color:var(--campo);outline:none;box-shadow:0 0 0 3px #cfe3b4}
+.filters{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:16px}@media(min-width:800px){.filters{grid-template-columns:1fr 1fr 1fr 1fr}}
+.timeline{list-style:none;margin:0;padding:0 0 0 18px;border-left:3px solid var(--brote)}.timeline li{position:relative;padding:4px 0 18px 16px}.timeline li::before{content:"";position:absolute;left:-27px;top:10px;width:13px;height:13px;border-radius:50%;background:var(--campo);border:3px solid #fff}.timeline p{margin:6px 0 0}
+/* v5: perfil */
+input[readonly]{background:#f3f6ef;color:var(--m)}
+@media(max-width:799px){.navbtn{font-size:.8rem}}
