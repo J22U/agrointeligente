@@ -60,3 +60,6 @@ input[readonly]{background:#f3f6ef;color:var(--m)}
 .nav{padding-bottom:env(safe-area-inset-bottom)}.navbtn{min-width:0}
 @media(max-width:799px){.navbtn.desk{display:none}}
 @media(min-width:800px){.topbar{display:none}}
+/* v8: costos */
+.fold{border:1px solid var(--l);border-radius:12px;background:#fff;margin:12px 0;padding:0 16px}.fold summary{min-height:52px;display:flex;align-items:center;font-weight:700;color:var(--hoja);cursor:pointer}.fold[open]{padding-bottom:16px}
+@media(max-width:799px){.navbtn{font-size:.72rem}}
