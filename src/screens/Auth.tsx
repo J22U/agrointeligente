@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { Scene, Logo, tramoActual } from '../components/Art'
 const T = tramoActual()
+const storageOk = (() => { try { localStorage.setItem('__t', '1'); localStorage.removeItem('__t'); return true } catch { return false } })()
 type Mode = 'in' | 'up' | 'reset'
 const traducir = (m: string) => /Invalid login/i.test(m) ? 'Correo o contraseña incorrectos.' : /already registered/i.test(m) ? 'Ya existe una cuenta con ese correo.' : /not confirmed/i.test(m) ? 'Confirma tu correo antes de entrar.' : /rate limit/i.test(m) ? 'Demasiados intentos. Espera unos minutos.' : 'No se pudo completar. Inténtalo de nuevo.'
 export default function Auth() {
@@ -21,6 +22,7 @@ export default function Auth() {
     <aside className="auth-brand" data-t={T}><div className="brand-text"><Logo size={44} /><h1>AgroInteligente</h1><p>Tus fincas, lotes y labores en un solo lugar, con un asistente que te orienta sin reemplazar al agrónomo.</p></div><Scene tramo={T} className="brand-art" /></aside>
     <main className="auth-form"><form onSubmit={submit} noValidate>
       <h2>{title}</h2>
+      {!storageOk && <p className="note">Tu navegador bloquea el almacenamiento (¿modo privado?). La sesión no se mantendrá al recargar.</p>}
       <label htmlFor="e">Correo</label><input id="e" type="email" autoComplete="email" value={email} onChange={x => setEmail(x.target.value)} aria-invalid={email !== '' && !emailOk} />
       {email !== '' && !emailOk && <p className="hint err">Escribe un correo válido.</p>}
       {mode !== 'reset' && <><label htmlFor="p">Contraseña</label><input id="p" type="password" autoComplete={mode === 'in' ? 'current-password' : 'new-password'} value={pw} onChange={x => setPw(x.target.value)} />

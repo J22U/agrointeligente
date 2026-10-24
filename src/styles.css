@@ -53,3 +53,10 @@ select{width:100%;font:inherit;padding:13px;border:1.5px solid #c9d7bd;border-ra
 /* v5: perfil */
 input[readonly]{background:#f3f6ef;color:var(--m)}
 @media(max-width:799px){.navbtn{font-size:.8rem}}
+/* v6: barra superior en celular */
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:var(--hoja);color:#fff;position:sticky;top:0;z-index:6}
+.tb-logo{display:flex;gap:8px;align-items:center;font:700 1.05rem Fraunces,Georgia,serif}.tb-actions{display:flex;gap:8px}
+.tb-btn{min-height:40px;padding:0 14px;border:1px solid rgba(255,255,255,.4);background:transparent;color:#fff;border-radius:10px;font-size:.95rem}
+.nav{padding-bottom:env(safe-area-inset-bottom)}.navbtn{min-width:0}
+@media(max-width:799px){.navbtn.desk{display:none}}
+@media(min-width:800px){.topbar{display:none}}
