@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { View } from '../App'
-import { Hills, Logo } from '../components/Art'
+import { Scene, Logo, tramoActual } from '../components/Art'
 const saludo = () => { const h = new Date().getHours(); return h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches' }
 const fecha = () => new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })
 type Log = { id: string; category: string; logged_on: string; description: string | null }
@@ -17,7 +17,7 @@ export default function Dashboard({ go }: { go: (v: View) => void }) {
   if (err) return <p className="err">{err}</p>
   if (!d) return <p className="muted">Cargando…</p>
   return <>
-    <header className="hero"><div><p className="date">{fecha()}</p><h1>{saludo()}</h1></div><Hills className="hero-art" /></header>
+    <header className="hero" data-t={tramoActual()}><div><p className="date">{fecha()}</p><h1>{saludo()}</h1></div><Scene tramo={tramoActual()} className="hero-art" slice /></header>
     {d.farms === 0 ? <section className="empty"><Logo size={48} /><h2>Empieza por tu primera finca</h2><p>Con una finca registrada podrás organizar tus lotes y consultar al asistente.</p><button className="primary" onClick={() => go('fincas')}>Crear finca</button></section> : <>
       <dl className="stats">
         <div><dt>Fincas</dt><dd>{d.farms}</dd></div><div><dt>Lotes</dt><dd>{d.plots}</dd></div>

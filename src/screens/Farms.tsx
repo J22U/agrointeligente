@@ -12,7 +12,7 @@ export default function Farms() {
   return <>
     <h1>Fincas</h1>
     {farms === null ? <p className="muted">Cargando…</p> : farms.length === 0 ? <p className="muted">Aún no tienes fincas. Agrega la primera con el formulario.</p> :
-      <ul className="list">{farms.map(f => <li key={f.id} className="row"><div><b>{f.name}</b><br /><span className="muted">{[f.municipality, f.area_ha ? `${f.area_ha} ha` : null].filter(Boolean).join(' · ') || 'Sin más datos'}</span></div>
+      <ul className="list">{farms.map(f => <li key={f.id} className="row"><span className="avatar">{f.name[0]?.toUpperCase()}</span><div><b>{f.name}</b><br /><span className="muted">{[f.municipality, f.area_ha ? `${f.area_ha} ha` : null].filter(Boolean).join(' · ') || 'Sin más datos'}</span></div>
         <button className="danger" onClick={async () => { if (confirm(`¿Eliminar "${f.name}" y todos sus lotes? No se puede deshacer.`)) { await supabase!.from('farms').delete().eq('id', f.id); load() } }}>Eliminar</button></li>)}</ul>}
     <form onSubmit={add} className="form"><h2>Nueva finca</h2>
       <label htmlFor="n">Nombre</label><input id="n" value={name} onChange={e => setName(e.target.value)} />

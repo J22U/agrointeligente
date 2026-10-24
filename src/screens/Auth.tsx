@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { Hills, Logo } from '../components/Art'
+import { Scene, Logo, tramoActual } from '../components/Art'
+const T = tramoActual()
 type Mode = 'in' | 'up' | 'reset'
 const traducir = (m: string) => /Invalid login/i.test(m) ? 'Correo o contraseña incorrectos.' : /already registered/i.test(m) ? 'Ya existe una cuenta con ese correo.' : /not confirmed/i.test(m) ? 'Confirma tu correo antes de entrar.' : /rate limit/i.test(m) ? 'Demasiados intentos. Espera unos minutos.' : 'No se pudo completar. Inténtalo de nuevo.'
 export default function Auth() {
@@ -17,7 +18,7 @@ export default function Auth() {
   }
   const title = { in: 'Entrar a tu cuenta', up: 'Crear cuenta', reset: 'Recuperar contraseña' }[mode]
   return <div className="auth">
-    <aside className="auth-brand"><div className="brand-text"><Logo size={44} /><h1>AgroInteligente</h1><p>Tus fincas, lotes y labores en un solo lugar, con un asistente que te orienta sin reemplazar al agrónomo.</p></div><Hills className="brand-art" /></aside>
+    <aside className="auth-brand" data-t={T}><div className="brand-text"><Logo size={44} /><h1>AgroInteligente</h1><p>Tus fincas, lotes y labores en un solo lugar, con un asistente que te orienta sin reemplazar al agrónomo.</p></div><Scene tramo={T} className="brand-art" /></aside>
     <main className="auth-form"><form onSubmit={submit} noValidate>
       <h2>{title}</h2>
       <label htmlFor="e">Correo</label><input id="e" type="email" autoComplete="email" value={email} onChange={x => setEmail(x.target.value)} aria-invalid={email !== '' && !emailOk} />
