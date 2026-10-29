@@ -51,7 +51,7 @@ export default function Dashboard({ go }: { go: (v: View) => void }) {
         <article className="card"><h3>Costos por lote</h3>{porLote.length ? <Bars data={porLote} fmt={compact} color="#c58b5a" /> : vacio('Aún no hay costos por lote.')}</article>
         {d.hv.length > 0 && <article className="card wide"><h3>Producción neta por mes{unit ? ` (${unit})` : ''}</h3>{unit ? <Columns data={prodMes} fmt={n => String(Math.round(n * 10) / 10)} color="#f2c14e" /> : vacio('Tienes cosechas en distintas unidades; filtra en Costos para compararlas.')}</article>}
       </section>
-      <details className="fold" open><summary>Últimas actividades</summary>
+      <details className="fold"><summary>Últimas actividades</summary>
         {d.logs.length === 0 ? <p className="muted">Todavía no hay labores registradas. Registra la primera en el Diario.</p> : <ul className="list">{d.logs.slice(0, 5).map(l => <li key={l.id}><b>{CATEGORIAS[l.category] ?? l.category}</b> <span className="muted">{l.logged_on}</span>{l.description && <><br />{l.description}</>}</li>)}</ul>}</details>
     </>}
   </>

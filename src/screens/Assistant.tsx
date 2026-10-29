@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { FunctionsHttpError } from '@supabase/supabase-js'
+import { FunctionsHttpError, FunctionsRelayError } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 type Plot = { id: string; name: string; crop: string }
 type Img = { media_type: string; data: string; url: string }
@@ -33,7 +33,12 @@ export default function Assistant() {
   const ask = async () => { setBusy(true); setErr(''); setAns(''); setSrc([]); setSug('')
     const question = modo === 'buscar' ? `Tipo de consulta: Búsqueda en internet\nPregunta: ${q.trim()}` : `Tipo de consulta: ${tipo}\nDescripción: ${desc.trim()}${desde.trim() ? `\nDesde cuándo: ${desde.trim()}` : ''}${cond.trim() ? `\nRiego y condiciones recientes observadas por el usuario: ${cond.trim()}` : ''}`
     const { data, error } = await supabase!.functions.invoke('ai-consult', { body: { question, plot_id: plotId || null, web: modo === 'buscar', images: modo === 'buscar' ? [] : imgs.map(({ media_type, data }) => ({ media_type, data })) } })
-    if (error) { const j = error instanceof FunctionsHttpError ? await error.context.json().catch(() => null) : null; setErr(j?.error ?? 'No se pudo conectar con el asistente. Revisa tu conexión.') }
+    if (error) {
+      let m = 'No se pudo conectar con el asistente. Revisa tu conexión a internet.'
+      if (error instanceof FunctionsHttpError) { const st = error.context.status; const j = await error.context.json().catch(() => null)
+        m = j?.error ?? (st === 404 ? 'La función ai-consult todavía no está desplegada en Supabase.' : st === 401 ? 'Supabase rechazó tu sesión para la función. Cierra sesión, vuelve a entrar y reintenta.' : `El servidor respondió con error ${st}${j?.message ? ': ' + j.message : ''}.`) }
+      else if (error instanceof FunctionsRelayError) m = 'Supabase no pudo ejecutar la función. Revisa que esté desplegada.'
+      setErr(m) }
     else { setAns(data.answer); setRest(data.remaining); setSrc(data.sources ?? []); setSug(data.sugerencias ?? ''); loadHist() }
     setBusy(false) }
   return <><h1>Asistente agrícola</h1>

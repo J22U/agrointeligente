@@ -18,7 +18,7 @@ const hoy = () => new Date().toLocaleDateString('en-CA')
 export default function Diary({ go }: { go: (v: View) => void }) {
   const [plots, setPlots] = useState<Plot[] | null>(null); const [logs, setLogs] = useState<Log[] | null>(null); const [msg, setMsg] = useState<{ ok: boolean; t: string } | null>(null)
   const [n, setN] = useState({ plot_id: '', category: 'labor', logged_on: hoy(), description: '' }); const [ex, setEx] = useState<Record<string, string>>({})
-  const [fl, setFl] = useState({ plot: '', cat: '', from: '', to: '' }); const [editId, setEditId] = useState<string | null>(null); const [openF, setOpenF] = useState(true)
+  const [fl, setFl] = useState({ plot: '', cat: '', from: '', to: '' }); const [editId, setEditId] = useState<string | null>(null); const [openF, setOpenF] = useState(false)
   useEffect(() => { supabase!.from('plots').select('id,name,crop').order('name').then(({ data, error }) => { if (error) setMsg({ ok: false, t: 'No se pudieron cargar los lotes.' }); else { setPlots(data as Plot[]); setN(x => ({ ...x, plot_id: data?.[0]?.id ?? '' })) } }) }, [])
   const loadLogs = async () => {
     let q = supabase!.from('farm_logs').select('id,plot_id,category,logged_on,description,details').order('logged_on', { ascending: false }).order('created_at', { ascending: false }).limit(200)

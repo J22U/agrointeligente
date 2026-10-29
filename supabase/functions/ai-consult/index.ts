@@ -4,7 +4,7 @@ Reglas: separa lo que se observa, las hipótesis y las recomendaciones. Nunca pr
 const OK_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, content-type, apikey, x-client-info' }
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, 'Content-Type': 'application/json' } })
-Deno.serve(async (req) => {
+const manejar = async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors })
   const key = Deno.env.get('AI_API_KEY'), model = Deno.env.get('AI_MODEL')
   const provider = Deno.env.get('AI_PROVIDER') ?? 'anthropic'
@@ -59,4 +59,5 @@ Deno.serve(async (req) => {
     await admin.from('ai_queries').delete().eq('id', row.id)
     return json({ error: 'El proveedor de IA no respondió. Esta consulta no se descontó; inténtalo de nuevo.' }, 502)
   }
-})
+}
+Deno.serve(async (req) => { try { return await manejar(req) } catch (e) { console.error('ai-consult', e); return json({ error: 'Error interno de la función. Revisa los registros en Supabase.' }, 500) } })
