@@ -81,3 +81,4 @@ button.danger{border-color:#e6c4c0;color:var(--r)}button.danger:hover:not(:disab
 .ans{margin-top:16px;padding:18px;background:#fff;border-left:4px solid var(--brote);border-radius:14px;box-shadow:var(--sombra)}.ans h3{margin:16px 0 6px;font-size:1.02rem;color:var(--noche)}.ans h3:first-child{margin-top:0}
 .ans p{margin:0 0 8px}.ans .bul{padding-left:16px;position:relative}.ans .bul::before{content:"•";position:absolute;left:2px;color:var(--campo)}
 .mini{border-top:1px solid var(--l);padding:4px 0}.mini>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:600}.fold .ans{box-shadow:none;border-left-width:3px;margin-top:6px}
+.sug{width:100%;height:68px;border:0;margin-top:12px;border-radius:12px;background:#fff}.list a{color:var(--prim);font-weight:600}
