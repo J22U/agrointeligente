@@ -22,10 +22,10 @@ export default function Profile({ userId, email }: { userId: string; email: stri
       <label htmlFor="pm">Moneda</label><select id="pm" value={cur} onChange={e => setCur(e.target.value)}>{MONEDAS.map(m => <option key={m}>{m}</option>)}</select>
       <p className="note">{PLANES[plan] ?? plan}</p>
       <button className="primary">Guardar cambios</button>{msg && <p role="status" className={msg.ok ? 'hint ok' : 'hint err'}>{msg.t}</p>}</form>
-    <form onSubmit={changePw} className="form"><h2>Cambiar contraseña</h2>
+    <details className="fold"><summary>Cambiar contraseña</summary><form onSubmit={changePw} className="form">
       <label htmlFor="n1">Nueva contraseña</label><input id="n1" type="password" autoComplete="new-password" value={pw} onChange={e => setPw(e.target.value)} /><p className="hint">Mínimo 6 caracteres.</p>
       <label htmlFor="n2">Repite la contraseña</label><input id="n2" type="password" autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} />
       {pw2 !== '' && pw !== pw2 && <p className="hint err">Las contraseñas no coinciden.</p>}
-      <button className="primary" disabled={!pwValid}>Cambiar contraseña</button>{pmsg && <p role="status" className={pmsg.ok ? 'hint ok' : 'hint err'}>{pmsg.t}</p>}</form>
+      <button className="primary" disabled={!pwValid}>Cambiar contraseña</button>{pmsg && <p role="status" className={pmsg.ok ? 'hint ok' : 'hint err'}>{pmsg.t}</p>}</form></details>
     <h2>Sesión</h2><button className="danger" onClick={() => supabase!.auth.signOut()}>Cerrar sesión</button></>
 }

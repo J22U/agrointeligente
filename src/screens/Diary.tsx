@@ -18,7 +18,7 @@ const hoy = () => new Date().toLocaleDateString('en-CA')
 export default function Diary({ go }: { go: (v: View) => void }) {
   const [plots, setPlots] = useState<Plot[] | null>(null); const [logs, setLogs] = useState<Log[] | null>(null); const [msg, setMsg] = useState<{ ok: boolean; t: string } | null>(null)
   const [n, setN] = useState({ plot_id: '', category: 'labor', logged_on: hoy(), description: '' }); const [ex, setEx] = useState<Record<string, string>>({})
-  const [fl, setFl] = useState({ plot: '', cat: '', from: '', to: '' }); const [editId, setEditId] = useState<string | null>(null)
+  const [fl, setFl] = useState({ plot: '', cat: '', from: '', to: '' }); const [editId, setEditId] = useState<string | null>(null); const [openF, setOpenF] = useState(true)
   useEffect(() => { supabase!.from('plots').select('id,name,crop').order('name').then(({ data, error }) => { if (error) setMsg({ ok: false, t: 'No se pudieron cargar los lotes.' }); else { setPlots(data as Plot[]); setN(x => ({ ...x, plot_id: data?.[0]?.id ?? '' })) } }) }, [])
   const loadLogs = async () => {
     let q = supabase!.from('farm_logs').select('id,plot_id,category,logged_on,description,details').order('logged_on', { ascending: false }).order('created_at', { ascending: false }).limit(200)
@@ -33,14 +33,14 @@ export default function Diary({ go }: { go: (v: View) => void }) {
     const row = { plot_id: n.plot_id, category: n.category, logged_on: n.logged_on, description: n.description.trim() || null, details }
     const { error } = editId ? await supabase!.from('farm_logs').update(row).eq('id', editId) : await supabase!.from('farm_logs').insert(row)
     if (error) setMsg({ ok: false, t: 'No se pudo guardar el registro.' }); else { setMsg({ ok: true, t: 'Registro guardado.' }); setN({ ...n, description: '' }); setEx({}); setEditId(null); loadLogs() } }
-  const edit = (l: Log) => { setEditId(l.id); setN({ plot_id: l.plot_id, category: l.category, logged_on: l.logged_on, description: l.description ?? '' }); setEx(l.details ?? {}); window.scrollTo({ top: 0, behavior: 'smooth' }) }
+  const edit = (l: Log) => { setEditId(l.id); setOpenF(true); setN({ plot_id: l.plot_id, category: l.category, logged_on: l.logged_on, description: l.description ?? '' }); setEx(l.details ?? {}); window.scrollTo({ top: 0, behavior: 'smooth' }) }
   const cancelar = () => { setEditId(null); setN({ ...n, description: '' }); setEx({}) }
   const nombre = (id: string) => plots?.find(p => p.id === id)?.name ?? ''
   if (plots === null) return <><h1>Diario</h1><p className={msg ? 'err' : 'muted'}>{msg?.t || 'Cargando…'}</p></>
   if (plots.length === 0) return <><h1>Diario</h1><section className="empty"><h2>Necesitas un lote para registrar labores</h2><p>Cada registro del diario pertenece a un lote.</p><button className="primary" onClick={() => go('lotes')}>Crear lote</button></section></>
   const cats = Object.entries(CATEGORIAS)
   return <><h1>Diario agrícola</h1>
-    <form onSubmit={add} className="panel"><h2 style={{ marginTop: 0 }}>{editId ? 'Editar registro' : 'Registrar labor'}</h2>
+    <details className="fold" open={openF} onToggle={ev => setOpenF(ev.currentTarget.open)}><summary>{editId ? 'Editar registro' : 'Registrar labor'}</summary><form onSubmit={add} className="panel">
       <div className="two"><div><label htmlFor="dl">Lote</label><select id="dl" value={n.plot_id} onChange={e => setN({ ...n, plot_id: e.target.value })}>{plots.map(p => <option key={p.id} value={p.id}>{p.name} · {p.crop}</option>)}</select></div>
         <div><label htmlFor="dd">Fecha</label><input id="dd" type="date" value={n.logged_on} onChange={e => setN({ ...n, logged_on: e.target.value })} /></div></div>
       <p className="lab">¿Qué hiciste?</p>
@@ -51,11 +51,11 @@ export default function Diary({ go }: { go: (v: View) => void }) {
       {!numsOk && <p className="hint err">Revisa los números: deben ser cero o mayores.</p>}
       {n.category === 'tratamiento' && <p className="note">Anota lo que aplicaste según la etiqueta del producto. Esta app no recomienda dosis.</p>}
       <label htmlFor="dx">Observaciones (opcional)</label><textarea id="dx" rows={3} value={n.description} onChange={e => setN({ ...n, description: e.target.value })} />
-      <button className="primary" disabled={!valid}>{editId ? 'Guardar cambios' : 'Guardar registro'}</button>{editId && <button type="button" onClick={cancelar}>Cancelar edición</button>}{msg && <p role="status" className={msg.ok ? 'hint ok' : 'hint err'}>{msg.t}</p>}</form>
+      <button className="primary" disabled={!valid}>{editId ? 'Guardar cambios' : 'Guardar registro'}</button>{editId && <button type="button" onClick={cancelar}>Cancelar edición</button>}{msg && <p role="status" className={msg.ok ? 'hint ok' : 'hint err'}>{msg.t}</p>}</form></details>
     <h2>Historial</h2>
-    <div className="filters"><select aria-label="Filtrar por lote" value={fl.plot} onChange={e => setFl({ ...fl, plot: e.target.value })}><option value="">Todos los lotes</option>{plots.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
+    <details className="fold"><summary>Filtros</summary><div className="filters"><select aria-label="Filtrar por lote" value={fl.plot} onChange={e => setFl({ ...fl, plot: e.target.value })}><option value="">Todos los lotes</option>{plots.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
       <select aria-label="Filtrar por actividad" value={fl.cat} onChange={e => setFl({ ...fl, cat: e.target.value })}><option value="">Todas las actividades</option>{cats.map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
-      <input aria-label="Desde" type="date" value={fl.from} onChange={e => setFl({ ...fl, from: e.target.value })} /><input aria-label="Hasta" type="date" value={fl.to} onChange={e => setFl({ ...fl, to: e.target.value })} /></div>
+      <input aria-label="Desde" type="date" value={fl.from} onChange={e => setFl({ ...fl, from: e.target.value })} /><input aria-label="Hasta" type="date" value={fl.to} onChange={e => setFl({ ...fl, to: e.target.value })} /></div></details>
     {logs === null ? <p className="muted">Cargando…</p> : logs.length === 0 ? <p className="muted">No hay registros con estos filtros.</p> : <ol className="timeline">{logs.map(l => <li key={l.id}>
       <div className="row"><div><b>{CATEGORIAS[l.category] ?? l.category}</b> <span className="muted">· {nombre(l.plot_id)}</span><br /><span className="muted">{l.logged_on}</span></div>
         <div className="btns"><button onClick={() => edit(l)}>Editar</button><button className="danger" onClick={async () => { if (confirm('¿Eliminar este registro?')) { await supabase!.from('farm_logs').delete().eq('id', l.id); loadLogs() } }}>Eliminar</button></div></div>

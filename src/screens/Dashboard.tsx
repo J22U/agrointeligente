@@ -25,9 +25,9 @@ export default function Dashboard({ go }: { go: (v: View) => void }) {
       </dl>
       <h2>Accesos rápidos</h2>
       <div className="actions"><button className="primary" onClick={() => go('asistente')}>Consultar al asistente</button><button onClick={() => go('fincas')}>Ver mis fincas</button>
-        <button disabled title="Disponible cuando se agregue el módulo de lotes y diario">Registrar labor</button></div>
-      <h2>Últimas actividades</h2>
-      {d.logs.length === 0 ? <p className="muted">Todavía no hay labores registradas. El diario agrícola llegará en el próximo módulo.</p> : <ul className="list">{d.logs.map(l => <li key={l.id}><b>{l.category}</b> <span className="muted">{l.logged_on}</span><br />{l.description}</li>)}</ul>}
+        <button onClick={() => go('diario')}>Registrar labor</button></div>
+      <details className="fold" open><summary>Últimas actividades</summary>
+      {d.logs.length === 0 ? <p className="muted">Todavía no hay labores registradas. Registra la primera en el Diario.</p> : <ul className="list">{d.logs.map(l => <li key={l.id}><b>{l.category}</b> <span className="muted">{l.logged_on}</span><br />{l.description}</li>)}</ul>}</details>
     </>}
   </>
 }
