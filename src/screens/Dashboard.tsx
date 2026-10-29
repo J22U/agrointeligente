@@ -2,32 +2,57 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { View } from '../App'
 import { Scene, Logo, tramoActual } from '../components/Art'
+import { Bars, Columns, Donut } from '../components/Charts'
+import { CATEGORIAS } from './Diary'
+const TIPOS: Record<string, string> = { insumos: 'Insumos', mano_obra: 'Mano de obra', transporte: 'Transporte', otros: 'Otros' }
+const MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
 const saludo = () => { const h = new Date().getHours(); return h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches' }
 const fecha = () => new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })
+type Ex = { amount: number; spent_on: string; kind: string; plot_id: string }
+type Hv = { quantity: number; losses: number; harvested_on: string; unit: string }
 type Log = { id: string; category: string; logged_on: string; description: string | null }
+type Data = { farms: number; tasks: number; cur: string; names: Record<string, string>; ex: Ex[]; hv: Hv[]; logs: Log[] }
+const group = <T,>(arr: T[], key: (x: T) => string, val: (x: T) => number) => { const m = new Map<string, number>(); arr.forEach(x => m.set(key(x), (m.get(key(x)) ?? 0) + val(x))); return [...m].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value) }
 export default function Dashboard({ go }: { go: (v: View) => void }) {
-  const [d, setD] = useState<{ farms: number; plots: number; tasks: number; cost: number; logs: Log[] } | null>(null); const [err, setErr] = useState('')
+  const [d, setD] = useState<Data | null>(null); const [err, setErr] = useState('')
   useEffect(() => { (async () => {
-    const s = supabase!; const n = async (t: string, f?: (q: any) => any) => { let q: any = s.from(t).select('id', { count: 'exact', head: true }); if (f) q = f(q); const r = await q; if (r.error) throw r.error; return r.count ?? 0 }
+    const s = supabase!
     try {
-      const [farms, plots, tasks] = await Promise.all([n('farms'), n('plots'), n('tasks', q => q.eq('done', false))])
-      const ex = await s.from('expenses').select('amount'); const lg = await s.from('farm_logs').select('id,category,logged_on,description').order('logged_on', { ascending: false }).limit(5)
-      setD({ farms, plots, tasks, cost: (ex.data ?? []).reduce((a: number, r: any) => a + Number(r.amount), 0), logs: (lg.data ?? []) as Log[] })
+      const cnt = async (t: string, f?: (q: any) => any) => { let q: any = s.from(t).select('id', { count: 'exact', head: true }); if (f) q = f(q); const r = await q; if (r.error) throw r.error; return r.count ?? 0 }
+      const [farms, tasks] = await Promise.all([cnt('farms'), cnt('tasks', q => q.eq('done', false))])
+      const [pl, ex, hv, lg, pr] = await Promise.all([s.from('plots').select('id,name'), s.from('expenses').select('amount,spent_on,kind,plot_id').limit(1000), s.from('harvests').select('quantity,losses,harvested_on,unit').limit(1000),
+        s.from('farm_logs').select('id,category,logged_on,description').order('logged_on', { ascending: false }).limit(300), s.from('profiles').select('currency').maybeSingle()])
+      if (pl.error || ex.error || hv.error || lg.error) throw new Error('carga')
+      setD({ farms, tasks, cur: pr.data?.currency ?? 'COP', names: Object.fromEntries((pl.data ?? []).map((p: any) => [p.id, p.name])), ex: ex.data as Ex[], hv: hv.data as Hv[], logs: lg.data as Log[] })
     } catch { setErr('No se pudieron cargar los datos. Revisa tu conexión.') } })() }, [])
   if (err) return <p className="err">{err}</p>
   if (!d) return <p className="muted">Cargando…</p>
+  const money = (n: number) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: d.cur, maximumFractionDigits: 0 }).format(n)
+  const compact = (n: number) => new Intl.NumberFormat('es-CO', { notation: 'compact', maximumFractionDigits: 1 }).format(n)
+  const meses = Array.from({ length: 6 }, (_, i) => { const t = new Date(); t.setDate(1); t.setMonth(t.getMonth() - (5 - i)); return { key: `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}`, label: MES[t.getMonth()] } })
+  const gastoMes = meses.map(m => ({ label: m.label, value: d.ex.filter(x => x.spent_on.startsWith(m.key)).reduce((a, x) => a + Number(x.amount), 0) }))
+  const porTipo = group(d.ex, x => TIPOS[x.kind] ?? x.kind, x => Number(x.amount)); const porLote = group(d.ex, x => d.names[x.plot_id] ?? '—', x => Number(x.amount)).slice(0, 6)
+  const acts = group(d.logs, x => CATEGORIAS[x.category] ?? x.category, () => 1).slice(0, 6)
+  const units = [...new Set(d.hv.map(h => h.unit))]; const unit = units.length === 1 ? units[0] : null
+  const prodMes = meses.map(m => ({ label: m.label, value: d.hv.filter(x => x.harvested_on.startsWith(m.key)).reduce((a, x) => a + Number(x.quantity) - Number(x.losses), 0) }))
+  const totalGasto = d.ex.reduce((a, x) => a + Number(x.amount), 0); const vacio = (t: string) => <p className="muted">{t}</p>
   return <>
     <header className="hero" data-t={tramoActual()}><div><p className="date">{fecha()}</p><h1>{saludo()}</h1></div><Scene tramo={tramoActual()} className="hero-art" slice /></header>
     {d.farms === 0 ? <section className="empty"><Logo size={48} /><h2>Empieza por tu primera finca</h2><p>Con una finca registrada podrás organizar tus lotes y consultar al asistente.</p><button className="primary" onClick={() => go('fincas')}>Crear finca</button></section> : <>
       <dl className="stats">
-        <div><dt>Fincas</dt><dd>{d.farms}</dd></div><div><dt>Lotes</dt><dd>{d.plots}</dd></div>
-        <div><dt>Tareas pendientes</dt><dd>{d.tasks}</dd></div><div><dt>Gastos registrados</dt><dd>{d.cost.toLocaleString('es-CO')}</dd></div>
+        <div><dt>Fincas</dt><dd>{d.farms}</dd></div><div><dt>Lotes</dt><dd>{Object.keys(d.names).length}</dd></div>
+        <div><dt>Tareas pendientes</dt><dd>{d.tasks}</dd></div><div><dt>Gastos registrados</dt><dd>{money(totalGasto)}</dd></div>
       </dl>
-      <h2>Accesos rápidos</h2>
-      <div className="actions"><button className="primary" onClick={() => go('asistente')}>Consultar al asistente</button><button onClick={() => go('fincas')}>Ver mis fincas</button>
-        <button onClick={() => go('diario')}>Registrar labor</button></div>
+      <div className="actions top"><button className="primary" onClick={() => go('diario')}>Registrar labor</button><button onClick={() => go('asistente')}>Consultar al asistente</button><button onClick={() => go('costos')}>Ver costos</button></div>
+      <section className="grid">
+        <article className="card"><h3>Gastos por mes</h3>{d.ex.length ? <Columns data={gastoMes} fmt={compact} /> : vacio('Registra gastos en Costos para ver este gráfico.')}</article>
+        <article className="card"><h3>Gastos por tipo</h3>{porTipo.length ? <Donut data={porTipo} fmt={money} /> : vacio('Aún no hay gastos registrados.')}</article>
+        <article className="card"><h3>Actividades más frecuentes</h3>{acts.length ? <Bars data={acts} fmt={n => String(n)} color="#8fc66b" /> : vacio('Registra labores en el Diario para verlas aquí.')}</article>
+        <article className="card"><h3>Costos por lote</h3>{porLote.length ? <Bars data={porLote} fmt={compact} color="#c58b5a" /> : vacio('Aún no hay costos por lote.')}</article>
+        {d.hv.length > 0 && <article className="card wide"><h3>Producción neta por mes{unit ? ` (${unit})` : ''}</h3>{unit ? <Columns data={prodMes} fmt={n => String(Math.round(n * 10) / 10)} color="#f2c14e" /> : vacio('Tienes cosechas en distintas unidades; filtra en Costos para compararlas.')}</article>}
+      </section>
       <details className="fold" open><summary>Últimas actividades</summary>
-      {d.logs.length === 0 ? <p className="muted">Todavía no hay labores registradas. Registra la primera en el Diario.</p> : <ul className="list">{d.logs.map(l => <li key={l.id}><b>{l.category}</b> <span className="muted">{l.logged_on}</span><br />{l.description}</li>)}</ul>}</details>
+        {d.logs.length === 0 ? <p className="muted">Todavía no hay labores registradas. Registra la primera en el Diario.</p> : <ul className="list">{d.logs.slice(0, 5).map(l => <li key={l.id}><b>{CATEGORIAS[l.category] ?? l.category}</b> <span className="muted">{l.logged_on}</span>{l.description && <><br />{l.description}</>}</li>)}</ul>}</details>
     </>}
   </>
 }
