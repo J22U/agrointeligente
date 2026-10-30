@@ -6,8 +6,9 @@ const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: { ...cors, 'Content-Type': 'application/json' } })
 const manejar = async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors })
-  const key = Deno.env.get('AI_API_KEY'), model = Deno.env.get('AI_MODEL')
-  const provider = Deno.env.get('AI_PROVIDER') ?? 'anthropic'
+  const key = Deno.env.get('AI_API_KEY')
+  const provider = Deno.env.get('AI_PROVIDER') ?? (key?.startsWith('AIza') ? 'gemini' : 'anthropic')
+  const model = Deno.env.get('AI_MODEL') ?? (provider === 'gemini' ? 'gemini-flash-latest' : 'claude-haiku-5-5')
   const url = Deno.env.get('AI_BASE_URL') ?? (provider === 'gemini' ? `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent` : 'https://api.anthropic.com/v1/messages')
   if (!key || !model) return json({ error: 'La IA no está configurada en el servidor todavía.' }, 503)
   const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, { global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } } })
