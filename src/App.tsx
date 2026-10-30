@@ -10,8 +10,9 @@ import Plots from './screens/Plots'
 import Diary from './screens/Diary'
 import Profile from './screens/Profile'
 import Costs from './screens/Costs'
-export type View = 'panel' | 'fincas' | 'lotes' | 'diario' | 'costos' | 'asistente' | 'perfil'
-const NAV: { id: View; label: string }[] = [{ id: 'panel', label: 'Panel' }, { id: 'fincas', label: 'Fincas' }, { id: 'lotes', label: 'Lotes' }, { id: 'diario', label: 'Diario' }, { id: 'costos', label: 'Costos' }, { id: 'asistente', label: 'Asistente' }, { id: 'perfil', label: 'Perfil' }]
+import Tasks from './screens/Tasks'
+export type View = 'panel' | 'fincas' | 'lotes' | 'diario' | 'tareas' | 'costos' | 'asistente' | 'perfil'
+const NAV: { id: View; label: string }[] = [{ id: 'panel', label: 'Panel' }, { id: 'fincas', label: 'Fincas' }, { id: 'lotes', label: 'Lotes' }, { id: 'diario', label: 'Diario' }, { id: 'tareas', label: 'Tareas' }, { id: 'costos', label: 'Costos' }, { id: 'asistente', label: 'Asistente' }, { id: 'perfil', label: 'Perfil' }]
 const SOON: string[] = []
 export default function App() {
   const [session, setSession] = useState<Session | null>(null); const [ready, setReady] = useState(false); const [view, setView] = useState<View>('panel')
@@ -27,5 +28,5 @@ export default function App() {
       {NAV.map(n => <button key={n.id} className={`navbtn${view === n.id ? ' on' : ''}${n.id === 'perfil' ? ' desk' : ''}`} aria-current={view === n.id ? 'page' : undefined} onClick={() => setView(n.id)}>{n.label}</button>)}
       {SOON.map(s => <button key={s} className="navbtn soon" disabled title="Próximamente">{s}<small>Pronto</small></button>)}
       <div className="spacer" /><div className="who">{session.user.email}</div><button className="navbtn out" onClick={() => supabase!.auth.signOut()}>Cerrar sesión</button></nav>
-    <main className="content">{view === 'panel' && <Dashboard go={setView} />}{view === 'fincas' && <Farms />}{view === 'lotes' && <Plots go={setView} />}{view === 'diario' && <Diary go={setView} />}{view === 'costos' && <Costs go={setView} />}{view === 'asistente' && <Assistant />}{view === 'perfil' && <Profile userId={session.user.id} email={session.user.email ?? ''} />}</main></div>
+    <main className="content">{view === 'panel' && <Dashboard go={setView} />}{view === 'fincas' && <Farms />}{view === 'lotes' && <Plots go={setView} />}{view === 'diario' && <Diary go={setView} />}{view === 'costos' && <Costs go={setView} />}{view === 'tareas' && <Tasks />}{view === 'asistente' && <Assistant />}{view === 'perfil' && <Profile userId={session.user.id} email={session.user.email ?? ''} />}</main></div>
 }

@@ -21,7 +21,7 @@ const Texto = ({ t }: { t: string }) => <div className="ans">{t.split('\n').map(
 export default function Assistant() {
   const [plots, setPlots] = useState<Plot[]>([]); const [plotId, setPlotId] = useState(''); const [tipo, setTipo] = useState(TIPOS[0]); const [desc, setDesc] = useState(''); const [desde, setDesde] = useState(''); const [cond, setCond] = useState('')
   const [imgs, setImgs] = useState<Img[]>([]); const [busy, setBusy] = useState(false); const [err, setErr] = useState(''); const [ans, setAns] = useState(''); const [rest, setRest] = useState<number | null>(null); const [hist, setHist] = useState<Hist[]>([])
-  const file = useRef<HTMLInputElement>(null); const [modo, setModo] = useState<'guiada' | 'buscar'>('guiada'); const [q, setQ] = useState(''); const [src, setSrc] = useState<{ title: string; url: string }[]>([]); const [sug, setSug] = useState('')
+  const file = useRef<HTMLInputElement>(null); const [abierto, setAbierto] = useState<'guiada' | 'buscar' | null>(null); const modo = abierto ?? 'guiada'; const [q, setQ] = useState(''); const [src, setSrc] = useState<{ title: string; url: string }[]>([]); const [sug, setSug] = useState('')
   const loadHist = async () => { const { data } = await supabase!.from('ai_queries').select('id,question,answer,created_at').not('answer', 'is', null).order('created_at', { ascending: false }).limit(10); setHist((data ?? []) as Hist[]) }
   useEffect(() => { supabase!.from('plots').select('id,name,crop').order('name').then(({ data }) => setPlots((data ?? []) as Plot[])); loadHist() }, [])
   const addFiles = async (list: FileList | null) => { if (!list) return; setErr('')
@@ -43,8 +43,7 @@ export default function Assistant() {
     setBusy(false) }
   return <><h1>Asistente agrícola</h1>
     <p className="note">Es una orientación, no un diagnóstico. No mide humedad, clima ni nutrientes: solo usa lo que tú le cuentas y registraste. Para decisiones de alto impacto, consulta a un agrónomo.</p>
-    <div className="seg" style={{ marginTop: 14 }}><button type="button" className={modo === 'guiada' ? 'on' : ''} onClick={() => setModo('guiada')}>Consulta guiada</button><button type="button" className={modo === 'buscar' ? 'on' : ''} onClick={() => setModo('buscar')}>Buscar con IA</button></div>
-    {modo === 'guiada' ? <section className="panel">
+    <details className="fold" style={{ marginTop: 14 }} open={abierto === 'guiada'} onToggle={ev => ev.currentTarget.open ? setAbierto('guiada') : setAbierto(a => a === 'guiada' ? null : a)}><summary>Consulta guiada</summary><section className="panel">
       <label htmlFor="al">Lote (opcional)</label><select id="al" value={plotId} onChange={e => setPlotId(e.target.value)}><option value="">Consulta general, sin lote</option>{plots.map(p => <option key={p.id} value={p.id}>{p.name} · {p.crop}</option>)}</select>
       <p className="lab">¿Qué necesitas?</p><div className="chips">{TIPOS.map(t => <button type="button" key={t} className={tipo === t ? 'chip on' : 'chip'} aria-pressed={tipo === t} onClick={() => setTipo(t)}>{t}</button>)}</div>
       <label htmlFor="ad">Describe lo que observas</label><textarea id="ad" rows={4} value={desc} onChange={e => setDesc(e.target.value)} placeholder="Ej.: manchas amarillas en las hojas bajas del tomate" />
@@ -55,12 +54,12 @@ export default function Assistant() {
       <button type="button" disabled={imgs.length >= 3} onClick={() => file.current?.click()}>Agregar fotos</button>
       {tipo === 'Diagnóstico por fotos' && imgs.length === 0 && <p className="hint muted">Con al menos una foto clara de la hoja, el tallo o el fruto, la orientación mejora.</p>}
       <button className="primary" disabled={desc.trim().length < 5 || busy} onClick={ask}>{busy ? 'Analizando…' : 'Consultar'}</button>
-      {err && <p role="alert" className="hint err">{err}</p>}{rest !== null && !err && <p className="hint muted">Te quedan {rest} consultas hoy.</p>}</section>
-    : <section className="panel"><label htmlFor="al2">Lote (opcional)</label><select id="al2" value={plotId} onChange={e => setPlotId(e.target.value)}><option value="">Sin lote</option>{plots.map(p => <option key={p.id} value={p.id}>{p.name} · {p.crop}</option>)}</select>
+      {err && <p role="alert" className="hint err">{err}</p>}{rest !== null && !err && <p className="hint muted">Te quedan {rest} consultas hoy.</p>}</section></details>
+    <details className="fold" open={abierto === 'buscar'} onToggle={ev => ev.currentTarget.open ? setAbierto('buscar') : setAbierto(a => a === 'buscar' ? null : a)}><summary>Buscar con IA</summary><section className="panel"><label htmlFor="al2">Lote (opcional)</label><select id="al2" value={plotId} onChange={e => setPlotId(e.target.value)}><option value="">Sin lote</option>{plots.map(p => <option key={p.id} value={p.id}>{p.name} · {p.crop}</option>)}</select>
       <label htmlFor="aq">Tu pregunta</label><textarea id="aq" rows={3} value={q} onChange={e => setQ(e.target.value)} placeholder="Ej.: ¿cuándo conviene podar el aguacate Hass en clima templado?" />
       <p className="hint muted">Busca en internet y responde citando fuentes. No incluyas datos personales.</p>
       <button className="primary" disabled={q.trim().length < 5 || busy} onClick={ask}>{busy ? 'Buscando…' : 'Buscar con IA'}</button>
-      {err && <p role="alert" className="hint err">{err}</p>}{rest !== null && !err && <p className="hint muted">Te quedan {rest} consultas hoy.</p>}</section>}
+      {err && <p role="alert" className="hint err">{err}</p>}{rest !== null && !err && <p className="hint muted">Te quedan {rest} consultas hoy.</p>}</section></details>
     {ans && <Texto t={ans} />}
     {src.some(x => /^https?:\/\//.test(x.url)) && <><h2>Fuentes</h2><ul className="list">{src.filter(x => /^https?:\/\//.test(x.url)).map(x => <li key={x.url}><a href={x.url} target="_blank" rel="noopener noreferrer">{x.title}</a><br /><span className="muted">{host(x.url)}</span></li>)}</ul></>}
     {sug && <iframe className="sug" title="Sugerencias de búsqueda de Google" sandbox="allow-popups allow-popups-to-escape-sandbox" srcDoc={sug} />}
