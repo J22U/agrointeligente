@@ -82,3 +82,11 @@ button.danger{border-color:#e6c4c0;color:var(--r)}button.danger:hover:not(:disab
 .ans p{margin:0 0 8px}.ans .bul{padding-left:16px;position:relative}.ans .bul::before{content:"•";position:absolute;left:2px;color:var(--campo)}
 .mini{border-top:1px solid var(--l);padding:4px 0}.mini>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:600}.fold .ans{box-shadow:none;border-left-width:3px;margin-top:6px}
 .sug{width:100%;height:68px;border:0;margin-top:12px;border-radius:12px;background:#fff}.list a{color:var(--prim);font-weight:600}
+/* tabla de historial */
+.tabla{background:#fff;border-radius:18px;box-shadow:var(--sombra);overflow:hidden}
+.trow{display:grid;grid-template-columns:1fr;gap:6px;padding:14px 16px;border-bottom:1px solid var(--l)}.trow:last-child{border-bottom:0}.thead{display:none}
+.tag{display:inline-block;font-style:normal;font-weight:700;font-size:.82rem;padding:3px 12px;border-radius:999px;color:var(--noche)}
+.tf{color:var(--m);font-size:.9rem}.tl{font-weight:700;color:var(--noche)}.td em{display:block;font-style:normal;color:var(--m)}.td .det{display:block;font-size:.92rem}
+.trow .btns{justify-content:flex-start;margin-top:4px}
+@media(min-width:800px){.trow{grid-template-columns:112px 160px 130px 1fr auto;align-items:center;gap:14px;padding:12px 18px}.thead{display:grid;background:#eef5ec;font-weight:700;font-size:.85rem;color:var(--m);padding:10px 18px}
+ .trow:not(.thead):hover{background:#fafcf9}.trow .btns{margin-top:0;justify-content:flex-end}.trow .btns button{min-height:38px;padding:0 12px;font-size:.9rem}}

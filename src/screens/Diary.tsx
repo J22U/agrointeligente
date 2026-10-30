@@ -14,6 +14,7 @@ const CAMPOS: Record<string, Campo[]> = {
   plagas: [{ k: 'severidad', label: 'Severidad observada', opts: ['Baja', 'Media', 'Alta'] }, { k: 'afectado', label: 'Parte afectada' }],
 }
 const ETIQ: Record<string, string> = Object.fromEntries(Object.values(CAMPOS).flat().map(c => [c.k, c.label.replace(/ \(.*\)/, '')]))
+const COLOR: Record<string, string> = { siembra: '#d8efc8', riego: '#cfe6f5', lluvia: '#d6e0f7', fertilizacion: '#f6e3b4', poda: '#e8dacb', malezas: '#dcebc0', plagas: '#f6d2cc', tratamiento: '#e6d6f1', labor: '#e1ece1', otro: '#ececec' }
 const hoy = () => new Date().toLocaleDateString('en-CA')
 export default function Diary({ go }: { go: (v: View) => void }) {
   const [plots, setPlots] = useState<Plot[] | null>(null); const [logs, setLogs] = useState<Log[] | null>(null); const [msg, setMsg] = useState<{ ok: boolean; t: string } | null>(null)
@@ -52,13 +53,16 @@ export default function Diary({ go }: { go: (v: View) => void }) {
       {n.category === 'tratamiento' && <p className="note">Anota lo que aplicaste según la etiqueta del producto. Esta app no recomienda dosis.</p>}
       <label htmlFor="dx">Observaciones (opcional)</label><textarea id="dx" rows={3} value={n.description} onChange={e => setN({ ...n, description: e.target.value })} />
       <button className="primary" disabled={!valid}>{editId ? 'Guardar cambios' : 'Guardar registro'}</button>{editId && <button type="button" onClick={cancelar}>Cancelar edición</button>}{msg && <p role="status" className={msg.ok ? 'hint ok' : 'hint err'}>{msg.t}</p>}</form></details>
-    <h2>Historial</h2>
+    <h2>Historial{logs && <span className="count">{logs.length}</span>}</h2>
     <details className="fold"><summary>Filtros</summary><div className="filters"><select aria-label="Filtrar por lote" value={fl.plot} onChange={e => setFl({ ...fl, plot: e.target.value })}><option value="">Todos los lotes</option>{plots.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
       <select aria-label="Filtrar por actividad" value={fl.cat} onChange={e => setFl({ ...fl, cat: e.target.value })}><option value="">Todas las actividades</option>{cats.map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
       <input aria-label="Desde" type="date" value={fl.from} onChange={e => setFl({ ...fl, from: e.target.value })} /><input aria-label="Hasta" type="date" value={fl.to} onChange={e => setFl({ ...fl, to: e.target.value })} /></div></details>
-    {logs === null ? <p className="muted">Cargando…</p> : logs.length === 0 ? <p className="muted">No hay registros con estos filtros.</p> : <ol className="timeline">{logs.map(l => <li key={l.id}>
-      <div className="row"><div><b>{CATEGORIAS[l.category] ?? l.category}</b> <span className="muted">· {nombre(l.plot_id)}</span><br /><span className="muted">{l.logged_on}</span></div>
-        <div className="btns"><button onClick={() => edit(l)}>Editar</button><button className="danger" onClick={async () => { if (confirm('¿Eliminar este registro?')) { await supabase!.from('farm_logs').delete().eq('id', l.id); loadLogs() } }}>Eliminar</button></div></div>
-      {l.details && Object.keys(l.details).length > 0 && <p className="muted">{Object.entries(l.details).map(([k, v]) => `${ETIQ[k] ?? k}: ${v}`).join(' · ')}</p>}
-      {l.description && <p>{l.description}</p>}</li>)}</ol>}</>
+    {logs === null ? <p className="muted">Cargando…</p> : logs.length === 0 ? <p className="muted">No hay registros con estos filtros.</p> : <div className="tabla" role="table" aria-label="Historial de labores">
+      <div className="trow thead" role="row"><span>Fecha</span><span>Actividad</span><span>Lote</span><span>Detalle</span><span /></div>
+      {logs.map(l => <div className="trow" role="row" key={l.id}>
+        <span className="tf">{l.logged_on}</span>
+        <span><i className="tag" style={{ background: COLOR[l.category] ?? '#ececec' }}>{CATEGORIAS[l.category] ?? l.category}</i></span>
+        <span className="tl">{nombre(l.plot_id)}</span>
+        <span className="td">{l.details && Object.keys(l.details).length > 0 && <span className="det">{Object.entries(l.details).map(([k, v]) => `${ETIQ[k] ?? k}: ${v}`).join(' · ')}</span>}{l.description && <em>{l.description}</em>}{!l.description && (!l.details || Object.keys(l.details).length === 0) && <em>Sin detalle</em>}</span>
+        <div className="btns"><button onClick={() => edit(l)}>Editar</button><button className="danger" onClick={async () => { if (confirm('¿Eliminar este registro?')) { await supabase!.from('farm_logs').delete().eq('id', l.id); loadLogs() } }}>Eliminar</button></div></div>)}</div>}</>
 }
